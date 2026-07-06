@@ -23,13 +23,6 @@
 
 **Проверка качества** (2026-07-06): критерий «≥ 3 фичи» выполнен ([feature-implementation-check.md](03-test/results/feature-implementation-check.md)); зафиксировано 5 открытых дефектов UI ([bug-report.md](03-test/results/bug-report.md)). Живой E2E против PostgreSQL в среде проверки не выполнялся.
 
-### Что ещё не сделано (кратко)
-
-- Прогон backend на реальной БД: миграции, seed, ручной happy path, concurrency-тест на овербукинг.
-- k6-нагрузка до 300 concurrent users; structured logging (`pino`); `RequestIdInterceptor`.
-- Unit-тесты сервисов NestJS на mock Prisma.
-- Web Push без Service Worker / VAPID (упрощённая реализация); TanStack Query и `openapi-typescript` из плана — не подключены (ручной API-слой).
-
 ## Быстрый старт (полный стек)
 
 ### 1. PostgreSQL и API
