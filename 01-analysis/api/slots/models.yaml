@@ -1,0 +1,182 @@
+# Слот (кулинарный класс) — read-only-проекция и его представления.
+# Ссылки: '#/components/schemas/...' — внутри файла;
+# '../catalog/...' и '../common/...' — на соседние домены.
+
+components:
+  schemas:
+    SlotStatus:
+      type: string
+      description: >-
+        Статус слота (data-model → Slot). scheduled — запланирован;
+        cancelled — отменён студией (R-008). «Прошедший» — производное значение
+        по полю start_at, отдельным статусом не хранится.
+      enum:
+        - scheduled
+        - cancelled
+
+    Slot:
+      type: object
+      description: >-
+        Полная карточка слота (конкретный кулинарный класс на дату/время).
+        Доступен только для чтения (NFR-8, NFR-10). Статус «Прошедший» —
+        производное значение по полю start_at, отдельным статусом не хранится.
+
+
+        Доступность (FR-9/FR-10): максимально доступное к брони число мест
+        max_seats = min(free_seats, 6). Число прокатных комплектов в брони
+        ограничено: rental_count ≤ free_rental_sets. Клиент со своей экипировкой
+        занимает место (free_seats), но не расходует прокатный фонд стола
+        (free_rental_sets). Возможна валидная ситуация «места есть, проката нет».
+
+
+        Цены (FR-13): price — тариф за место, rental_price — отдельный тариф
+        проката за один комплект (фартук + набор ножей), оба в рублях (RUB).
+        Итоговая цена брони производная = price·seats_count + rental_price·rental_count.
+
+
+        Инварианты: free_seats ≤ total_seats; счётчики (free_seats,
+        free_rental_sets, total_seats) и цены (price, rental_price) неотрицательны.
+      required:
+        - id
+        - start_at
+        - program
+        - chef
+        - total_seats
+        - free_seats
+        - free_rental_sets
+        - price
+        - rental_price
+        - address
+        - status
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Идентификатор слота.
+        start_at:
+          type: string
+          format: date-time
+          description: >-
+            Дата и время начала класса в UTC (~3 ч). Источник истины — сервер;
+            право и тип отмены (правило 24 ч) вычисляет сервер (data-model → Slot).
+        program:
+          $ref: '../catalog/models.yaml#/components/schemas/Program'
+        chef:
+          $ref: '../catalog/models.yaml#/components/schemas/Chef'
+        total_seats:
+          type: integer
+          minimum: 1
+          maximum: 6
+          description: Общее число мест в классе (в людях; ≤ вместимость стола 6).
+          example: 6
+        free_seats:
+          type: integer
+          minimum: 0
+          description: >-
+            Число свободных мест (расчётное; пересчитывает бэкенд, FR-9). Своя
+            экипировка клиента тоже занимает место. К брони доступно
+            max_seats = min(free_seats, 6).
+          example: 4
+        free_rental_sets:
+          type: integer
+          minimum: 0
+          maximum: 6
+          description: >-
+            Число свободных прокатных комплектов на стол (0..6; расчётное, FR-10).
+            Ограничивает rental_count в брони (rental_count ≤ free_rental_sets).
+            Своя экипировка фонд не расходует; учитывается отдельно от мест.
+          example: 3
+        price:
+          type: integer
+          minimum: 0
+          description: Цена за одно место, в рублях (целое число, валюта RUB).
+          example: 3500
+        rental_price:
+          type: integer
+          minimum: 0
+          description: >-
+            Тариф проката за один комплект (фартук + набор ножей), в рублях
+            (целое, RUB). Своя экипировка бесплатна.
+          example: 500
+        address:
+          type: string
+          description: Адрес студии, где проходит класс (FR-5).
+          example: Санкт-Петербург, наб. Обводного канала, 74, лофт «Шеф-стол»
+        status:
+          $ref: '#/components/schemas/SlotStatus'
+
+    SlotSummary:
+      type: object
+      description: Урезанное представление слота для списка классов (SCR-03).
+      required:
+        - id
+        - start_at
+        - program
+        - chef
+        - price
+        - rental_price
+        - total_seats
+        - free_seats
+        - free_rental_sets
+        - status
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Идентификатор слота.
+        start_at:
+          type: string
+          format: date-time
+          description: Дата и время начала класса.
+        program:
+          $ref: '../catalog/models.yaml#/components/schemas/Program'
+        chef:
+          $ref: '../catalog/models.yaml#/components/schemas/Chef'
+        price:
+          type: integer
+          minimum: 0
+          description: Цена за одно место, в рублях (целое число, валюта RUB).
+          example: 3500
+        rental_price:
+          type: integer
+          minimum: 0
+          description: Тариф проката за один комплект (фартук + набор ножей), в рублях (RUB).
+          example: 500
+        total_seats:
+          type: integer
+          minimum: 1
+          maximum: 6
+          description: Общее число мест в классе (в людях; ≤ 6).
+          example: 6
+        free_seats:
+          type: integer
+          minimum: 0
+          description: >-
+            Число свободных мест (расчётное, FR-9). Своя экипировка тоже занимает
+            место. К брони доступно max_seats = min(free_seats, 6).
+          example: 4
+        free_rental_sets:
+          type: integer
+          minimum: 0
+          maximum: 6
+          description: >-
+            Число свободных прокатных комплектов на стол (0..6; расчётное, FR-10).
+            Ограничивает rental_count в брони. Учитывается отдельно от мест.
+          example: 3
+        status:
+          $ref: '#/components/schemas/SlotStatus'
+
+    SlotListResponse:
+      type: object
+      description: Постраничный список слотов (SCR-03).
+      required:
+        - items
+        - meta
+      properties:
+        items:
+          type: array
+          description: Элементы списка слотов.
+          items:
+            $ref: '#/components/schemas/SlotSummary'
+        meta:
+          $ref: '../common/models.yaml#/components/schemas/PaginationMeta'

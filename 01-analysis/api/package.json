@@ -1,0 +1,14 @@
+{
+  "name": "chef-table-api-docs",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Клиентское API кулинарной студии «Шеф-стол» — запись на кулинарные классы (мульти-файловый OpenAPI)",
+  "scripts": {
+    "lint": "redocly lint",
+    "preview": "redocly preview-docs",
+    "bundle": "for d in auth slots bookings profile catalog; do redocly bundle $d -o dist/$d.yaml; done"
+  },
+  "devDependencies": {
+    "@redocly/cli": "^1.34.0"
+  }
+}

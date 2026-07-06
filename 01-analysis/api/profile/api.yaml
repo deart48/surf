@@ -1,0 +1,74 @@
+openapi: 3.0.3
+
+info:
+  title: Шеф-стол API — Profile
+  description: >-
+    Профиль клиента: просмотр имени и телефона, дозаполнение имени при первом
+    входе. Часть клиентского API кулинарной студии «Шеф-стол».
+  version: 1.0.0
+
+servers:
+  - url: https://api.chef-table.example/v1
+    description: Production — продакшен-окружение
+  - url: https://staging-api.chef-table.example/v1
+    description: Staging — тестовое окружение
+
+tags:
+  - name: Profile
+    description: Профиль клиента
+
+security:
+  - bearerAuth: []
+
+paths:
+  /profile:
+    get:
+      tags:
+        - Profile
+      summary: Получить профиль
+      operationId: getProfile
+      description: Данные текущего клиента — имя и телефон (только свои, FR-20, NFR-7, NFR-8; SCR-10).
+      responses:
+        '200':
+          description: Профиль клиента
+          content:
+            application/json:
+              schema:
+                $ref: './models.yaml#/components/schemas/Client'
+        '401':
+          $ref: '../common/models.yaml#/components/responses/Unauthorized'
+        default:
+          $ref: '../common/models.yaml#/components/responses/InternalError'
+    patch:
+      tags:
+        - Profile
+      summary: Задать/обновить имя
+      operationId: updateProfile
+      description: >-
+        Дозаполнение имени при первом входе (шаг 3 регистрации, FR-1, SCR-01) и
+        его последующее изменение. Телефон здесь не меняется (он — идентификатор
+        входа и канал OTP). Смена имени не требует подтверждения кодом.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: './models.yaml#/components/schemas/UpdateProfileRequest'
+      responses:
+        '200':
+          description: Обновлённый профиль клиента
+          content:
+            application/json:
+              schema:
+                $ref: './models.yaml#/components/schemas/Client'
+        '400':
+          $ref: '../common/models.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../common/models.yaml#/components/responses/Unauthorized'
+        default:
+          $ref: '../common/models.yaml#/components/responses/InternalError'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      $ref: '../auth/models.yaml#/components/securitySchemes/bearerAuth'

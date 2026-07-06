@@ -1,0 +1,88 @@
+# Программа/меню и шеф — справочные объекты (read-only) + списки для фильтров.
+# Ссылки: '#/components/schemas/...' — внутри файла; '../common/...' — на сквозные объекты.
+
+components:
+  schemas:
+    ProgramType:
+      type: string
+      description: >-
+        Тип программы/меню: novice — новичковый (простая итальянская кухня),
+        experienced — опытный (сложнее, с духовкой/техникой), FR-4/FR-5.
+      enum:
+        - novice
+        - experienced
+
+    Program:
+      type: object
+      description: >-
+        Программа (меню) кулинарного класса. Справочник, доступен только для
+        чтения; определяет тип и длительность класса (data-model → Program).
+      required:
+        - id
+        - name
+        - type
+        - duration_min
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Идентификатор программы/меню.
+        name:
+          type: string
+          description: Название меню.
+          example: Простая итальянская кухня
+        type:
+          $ref: '#/components/schemas/ProgramType'
+        duration_min:
+          type: integer
+          minimum: 1
+          description: Длительность класса в минутах (≈180, «около 3 часов»).
+          example: 180
+
+    Chef:
+      type: object
+      description: >-
+        Шеф, который ведёт кулинарный класс. Для клиента — справочные данные
+        слота, доступны только для чтения (data-model → Chef).
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Идентификатор шефа.
+        name:
+          type: string
+          description: Имя шефа.
+          example: Марко
+
+    ChefListResponse:
+      type: object
+      description: Постраничный список шефов (справочник для фильтра, FR-4).
+      required:
+        - items
+        - meta
+      properties:
+        items:
+          type: array
+          description: Элементы списка шефов.
+          items:
+            $ref: '#/components/schemas/Chef'
+        meta:
+          $ref: '../common/models.yaml#/components/schemas/PaginationMeta'
+
+    ProgramListResponse:
+      type: object
+      description: Постраничный список программ/меню (справочник для фильтра, FR-4/FR-5).
+      required:
+        - items
+        - meta
+      properties:
+        items:
+          type: array
+          description: Элементы списка программ/меню.
+          items:
+            $ref: '#/components/schemas/Program'
+        meta:
+          $ref: '../common/models.yaml#/components/schemas/PaginationMeta'

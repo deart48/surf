@@ -1,0 +1,77 @@
+openapi: 3.0.3
+
+info:
+  title: Шеф-стол API — Catalog
+  description: >-
+    Справочники программ/меню и шефов (read-only проекция существующей
+    инфраструктуры) для фильтров списка классов. Часть клиентского API
+    кулинарной студии «Шеф-стол».
+  version: 1.0.0
+
+servers:
+  - url: https://api.chef-table.example/v1
+    description: Production — продакшен-окружение
+  - url: https://staging-api.chef-table.example/v1
+    description: Staging — тестовое окружение
+
+tags:
+  - name: Catalog
+    description: Справочники программ и шефов, read-only
+
+security:
+  - bearerAuth: []
+
+paths:
+  /chefs:
+    get:
+      tags:
+        - Catalog
+      summary: Справочник шефов
+      operationId: listChefs
+      description: >-
+        Список шефов для фильтра «шеф» на списке классов (FR-4, SCR-04).
+        Read-only справочник: клиент не создаёт и не редактирует шефов (NFR-8, NFR-10).
+      parameters:
+        - $ref: '../common/models.yaml#/components/parameters/LimitParam'
+        - $ref: '../common/models.yaml#/components/parameters/OffsetParam'
+      responses:
+        '200':
+          description: Список шефов
+          content:
+            application/json:
+              schema:
+                $ref: './models.yaml#/components/schemas/ChefListResponse'
+        '401':
+          $ref: '../common/models.yaml#/components/responses/Unauthorized'
+        default:
+          $ref: '../common/models.yaml#/components/responses/InternalError'
+
+  /programs:
+    get:
+      tags:
+        - Catalog
+      summary: Справочник программ/меню
+      operationId: listPrograms
+      description: >-
+        Список программ (меню) для отображения и фильтрации по типу
+        (новичковый/опытный) на списке классов (FR-4, FR-5, SCR-04).
+        Read-only справочник существующей инфраструктуры (NFR-8, NFR-10).
+      parameters:
+        - $ref: '../common/models.yaml#/components/parameters/LimitParam'
+        - $ref: '../common/models.yaml#/components/parameters/OffsetParam'
+      responses:
+        '200':
+          description: Список программ/меню
+          content:
+            application/json:
+              schema:
+                $ref: './models.yaml#/components/schemas/ProgramListResponse'
+        '401':
+          $ref: '../common/models.yaml#/components/responses/Unauthorized'
+        default:
+          $ref: '../common/models.yaml#/components/responses/InternalError'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      $ref: '../auth/models.yaml#/components/securitySchemes/bearerAuth'

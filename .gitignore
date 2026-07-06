@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+01-analysis/api/node_modules/
+01-analysis/api/dist/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# NestJS backend
+backend/dist/
+backend/.env
+
+# Frontend build
+web/dist/
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# Test / coverage
+coverage/
+*.out
